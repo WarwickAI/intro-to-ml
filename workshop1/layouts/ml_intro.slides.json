@@ -1,0 +1,99 @@
+{
+  "type": "slides",
+  "data": {
+    "cells": [
+      {
+        "type": "skip",
+        "showCode": false
+      },
+      {
+        "type": "slide",
+        "showCode": false
+      },
+      {
+        "type": "slide",
+        "showCode": false
+      },
+      {
+        "type": "slide",
+        "showCode": false
+      },
+      {
+        "type": "slide",
+        "showCode": false
+      },
+      {
+        "type": "skip",
+        "showCode": false
+      },
+      {
+        "type": "slide",
+        "showCode": true
+      },
+      {
+        "type": "slide",
+        "showCode": false
+      },
+      {
+        "type": "skip",
+        "showCode": false
+      },
+      {
+        "type": "slide",
+        "showCode": false
+      },
+      {
+        "type": "skip",
+        "showCode": false
+      },
+      {
+        "type": "slide",
+        "showCode": false
+      },
+      {
+        "type": "slide",
+        "showCode": false
+      },
+      {
+        "type": "slide",
+        "showCode": false
+      },
+      {
+        "type": "skip",
+        "showCode": false
+      },
+      {
+        "type": "skip",
+        "showCode": false
+      },
+      {
+        "type": "slide",
+        "showCode": false
+      },
+      {
+        "type": "slide",
+        "showCode": false
+      },
+      {
+        "type": "slide",
+        "showCode": false
+      },
+      {
+        "type": "slide",
+        "showCode": false
+      },
+      {
+        "type": "slide",
+        "showCode": false
+      },
+      {
+        "type": "slide",
+        "showCode": false
+      }
+    ],
+    "deck": {
+      "transition": "none",
+      "verticalAlign": "center"
+    }
+  }
+}
