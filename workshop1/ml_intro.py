@@ -52,11 +52,10 @@ def welcome():
     mo.md("""
     # Workshop 1
 
-    This workshop series builds up your intuition for **neural networks**,
-    the technology behind ChatGPT, Claude and image generators.
+    This workshop series builds up your intuition for **neural networks**.
 
-    Today we use small models you can see on one graph.
-    Every idea you meet today is also used to train large neural networks.
+    Today we'll use small models you can see on one graph,
+    but every idea you meet today is also used to train large neural networks.
     """)
     return
 
