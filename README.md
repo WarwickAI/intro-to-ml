@@ -17,3 +17,11 @@ Open `workshop2/ml_codealong.ipynb` in Google Colab.
 ```sh
 uv run --with jupyterlab --with ipywidgets --with scikit-learn --with pandas --with matplotlib --with datasets jupyter lab workshop2/ml_codealong.ipynb
 ```
+
+## Workshop 3
+
+Open `workshop3/ml_lab.ipynb` in Google Colab. Answers are in `workshop3/ml_lab_solutions.ipynb`.
+
+```sh
+uv run --with jupyterlab --with ipywidgets --with torch --with scikit-learn --with pandas --with matplotlib jupyter lab workshop3/ml_lab.ipynb
+```
