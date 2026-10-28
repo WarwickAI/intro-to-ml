@@ -156,6 +156,9 @@ def cells_from(segs, solutions, forms):
         elif kind == "code" and nxt[0] == "answer_code":
             cells.append(code_cell(nxt[1] if solutions else val))
             k += 2
+        elif kind == "code" and nxt[0] == "answer_text":
+            cells += [code_cell(val), md_cell(nxt[1] if solutions else "Your answer: …")]
+            k += 2
         elif kind == "code":
             cells.append(code_cell(val))
             k += 1
