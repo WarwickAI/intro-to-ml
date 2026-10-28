@@ -4,8 +4,10 @@ Usage: python3 workshop3/build_notebooks.py path/to/website/src/content/courses/
 
 The page is the source of truth. Code blocks become code cells, with the block after
 each one's <details> answer used for the solutions. Text questions get a "Your answer"
-cell. <NeuronDiagram> tags reuse the existing hidden-code diagram cells, and an MDX
-comment of the form {/* notebook: ... */} becomes a notebook-only markdown cell.
+cell. Diagram tags reuse the hidden-code widget cells where a widget exists and show a
+screenshot from workshop3/images otherwise. <ColourBox> wrappers are dropped and their
+contents stay in the text, and an MDX comment {/* notebook: ... */} becomes a
+notebook-only markdown cell.
 """
 
 import html
@@ -15,13 +17,25 @@ import sys
 from pathlib import Path
 
 LAB = Path(__file__).resolve().parent
-DIAGRAMS = {"one-neuron": "One neuron", "neurons-add-up": "Neurons add up", "layers-and-parameters": "Layers and parameters", "loss-bowl": "Loss bowl"}
+IMAGE_URL = "https://raw.githubusercontent.com/WarwickAI/intro-to-ml/main/workshop3/images"
+WIDGETS = {"one-input-neuron": "One neuron", "network-computes": "Neurons add up", "any-shape": "Layers and parameters", "loss-bowl": "Loss bowl"}
+IMAGES = {
+    "neuron": ("neuron.png", "A neuron with three inputs: each input times its weight, plus the bias, added up, then the activation.", ""),
+    "layer": ("layer.png", "A layer of three neurons reading the same three inputs.", "On the workshop page you can add and remove neurons and watch the code change."),
+    "network": ("network.png", "A network with one input, two hidden layers of three neurons and one output.", ""),
+    "activations": ("activations.png", "The ReLU, Sigmoid and Tanh activation functions.", ""),
+}
+DIAGRAM_TAG = re.compile(r'<(?:NeuronDiagram|NetworkDiagram) diagram="([^"]+)"\s*(/?)>')
 COLAB_BULLET = re.compile(r"^- Open the \[notebook in Colab\]\(.*?\) and save your own copy\.$", re.M)
 NB_BULLET = "- Save your own copy in Colab (**File → Save a copy in Drive**)."
+NB_WORDING = {
+    "Press the buttons above to add neurons and watch the code change.": "On the workshop page you can add and remove neurons and watch the code change.",
+}
 
 
 def segments(body):
     out, buf, lines, i = [], [], body.split("\n"), 0
+    boxed = False
 
     def flush():
         text = "\n".join(buf).strip("\n")
@@ -31,7 +45,8 @@ def segments(body):
 
     while i < len(lines):
         line = lines[i]
-        if line.startswith("```"):
+        tag = DIAGRAM_TAG.match(line)
+        if line.startswith("```") and not boxed:
             flush()
             j = i + 1
             while not lines[j].startswith("```"):
@@ -49,9 +64,23 @@ def segments(body):
             else:
                 out.append(("answer_text", inner))
             i = j + 1
-        elif line.startswith("<NeuronDiagram"):
+        elif tag:
             flush()
-            out.append(("diagram", re.search(r'diagram="([^"]+)"', line).group(1)))
+            if not tag.group(2):
+                j = i + 1
+                while not lines[j].startswith("</"):
+                    j += 1
+                children = "\n".join(lines[i + 1:j]).strip("\n")
+                if children:
+                    out.append(("text", children))
+                i = j
+            out.append(("diagram", tag.group(1)))
+            i += 1
+        elif line.startswith("<ColourBox"):
+            boxed = True
+            i += 1
+        elif line.startswith("</ColourBox>"):
+            boxed = False
             i += 1
         elif line.startswith("{/* notebook:"):
             flush()
@@ -60,7 +89,7 @@ def segments(body):
         elif line.startswith("import "):
             i += 1
         else:
-            if line.startswith("## ") or line.startswith("### "):
+            if re.match(r"#{2,4} ", line):
                 flush()
             buf.append(line)
             i += 1
@@ -76,11 +105,20 @@ def lines_of(text):
 def md_cell(text):
     text = text.replace("](/education/", "](https://warwick.ai/education/")
     text = COLAB_BULLET.sub(NB_BULLET, text)
+    for web, notebook in NB_WORDING.items():
+        text = text.replace(web, notebook)
+    text = re.sub(r"\n{3,}", "\n\n", text)
     return {"cell_type": "markdown", "metadata": {}, "source": lines_of(text)}
 
 
 def code_cell(source, form=False):
     return {"cell_type": "code", "metadata": {"cellView": "form"} if form else {}, "source": lines_of(source), "execution_count": None, "outputs": []}
+
+
+def image_cell(name):
+    file, alt, note = IMAGES[name]
+    text = f"![{alt}]({IMAGE_URL}/{file})"
+    return md_cell(text + ("\n\n" + note if note else ""))
 
 
 def hint(student, answer):
@@ -121,11 +159,14 @@ def cells_from(segs, solutions, forms):
         elif kind == "code":
             cells.append(code_cell(val))
             k += 1
-        elif kind == "diagram":
-            cells.append(code_cell(forms[DIAGRAMS[val]], form=True))
+        elif kind == "diagram" and val in WIDGETS:
+            cells.append(code_cell(forms[WIDGETS[val]], form=True))
+            k += 1
+        elif kind == "diagram" and val in IMAGES:
+            cells.append(image_cell(val))
             k += 1
         else:
-            raise ValueError(f"stray {kind} at {k}")
+            raise ValueError(f"stray {kind} {val!r} at {k}")
     return cells
 
 
@@ -142,7 +183,7 @@ def form_cells(path):
         source = "".join(cell["source"])
         if cell["metadata"].get("cellView") == "form":
             forms[source.splitlines()[0].removeprefix("# @title ").strip()] = source
-    missing = set(DIAGRAMS.values()) - set(forms)
+    missing = set(WIDGETS.values()) - set(forms)
     if missing:
         raise SystemExit(f"form cells missing from {path.name}: {missing}")
     return forms
